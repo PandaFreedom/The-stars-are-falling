@@ -3,14 +3,27 @@ import { Button, Card, Form, Input } from 'antd';
 const ZooPage = () => {
   const [form] = Form.useForm();
 
-  const handleFinish = (values: { name: string; age: number }) => {
-    fetch('http://localhost:3000/api/zoo', {
+  const handleFinish = () => {
+    const values = form.getFieldsValue(); // 获取表单数据
+    // 确保 age 是数字类型
+    values.age = Number(values.age);
+
+    // 检查 age 是否有效
+    if (isNaN(values.age)) {
+      console.error("无效的年龄值");
+      return; // 终止请求
+    }
+
+    fetch('http://localhost:3001/api/zoo', {
       method: 'POST',
-      body: JSON.stringify(values),
+      body: JSON.stringify(values), // 使用表单数据
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
       .then((res) => {
         console.log(res);
-        form.resetFields(); // 清空输入框
+        form.resetFields();
       })
       .catch((err) => {
         console.log(err);
@@ -26,7 +39,7 @@ const ZooPage = () => {
             <Input />
           </Form.Item>
           <Form.Item label="Age" name="age">
-            <Input />
+            <Input type="number" />
           </Form.Item>
           <Button type='primary' htmlType='submit'>Submit</Button>
         </Form>
