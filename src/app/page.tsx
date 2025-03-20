@@ -1,5 +1,6 @@
 "use client"
 import { Button, Card, Form, Input } from 'antd';
+import TodoList from './component/todolist';
 const ZooPage = () => {
   const [form] = Form.useForm();
 
@@ -32,8 +33,8 @@ const ZooPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-blue-400">
-      <h1>Zoo Data</h1>
-      <Card className='w-1/2 mx-auto'>
+      <h1 className='text-4xl font-bold text-center mb-10'>Zoo Data</h1>
+      <Card className='w-1/2 mx-auto mb-10'>
         <Form form={form} onFinish={handleFinish}>
           <Form.Item label="Name" name="name">
             <Input />
@@ -43,6 +44,9 @@ const ZooPage = () => {
           </Form.Item>
           <Button type='primary' htmlType='submit'>Submit</Button>
         </Form>
+      </Card>
+      <Card className='w-1/2  mt-10' color='blue'>
+        <TodoList />
       </Card>
     </div>
   );
