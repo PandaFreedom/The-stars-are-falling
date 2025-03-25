@@ -8,4 +8,8 @@ const nextConfig: NextConfig = {
   },
 };
 
+// export const config = {
+//   matcher: "/:path*", // 作用于所有路由
+// };
+
 export default nextConfig;
