@@ -20,7 +20,7 @@ const LoginForm: React.FC = () => {
     queryKey: ['captcha'],
     queryFn: async () => {
       const response = await fetch('http://localhost:3001/api/user/loginSvg', {
-        credentials: 'include'
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('网络错误，无法获取验证码');
