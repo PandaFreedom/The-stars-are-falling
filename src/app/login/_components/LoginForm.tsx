@@ -2,6 +2,7 @@
 import { Button, Form, Input } from 'antd';
 import React, { useState } from 'react';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 
 const { Item } = Form;
 
@@ -12,7 +13,17 @@ function LoginForm() {
     username: string;
     password: string;
     confirmPassword?: string; // 可选字段
+    svgText?: string;
   }
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['svg'],
+    queryFn: () => {
+      return fetch('http://localhost:3001/login/svg').then((res) => res.text());
+    },
+  });
+
+  console.log('data', data);
 
   const onFinish = (values: FormValues) => {
     console.log(values);
@@ -22,6 +33,10 @@ function LoginForm() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
@@ -43,29 +58,33 @@ function LoginForm() {
           />
         </Item>
         {isRegistering && (
-          <Item name="confirmPassword" rules={[{ required: true, message: '请输入确认密码!' }]}>
-            <Input
-              placeholder='确认密码'
-              type={confirmPasswordVisible ? 'text' : 'password'}
-              suffix={
-                confirmPasswordVisible ? (
-                  <EyeOutlined onClick={() => setConfirmPasswordVisible(false)} />
-                ) : (
-                  <EyeInvisibleOutlined onClick={() => setConfirmPasswordVisible(true)} />
-                )
-              }
-            />
-          </Item>
+          <>
+            <Item name="confirmPassword" rules={[{ required: true, message: '请输入确认密码!' }]}>
+              <Input
+                placeholder='确认密码'
+                type={confirmPasswordVisible ? 'text' : 'password'}
+                suffix={
+                  confirmPasswordVisible ? (
+                    <EyeOutlined onClick={() => setConfirmPasswordVisible(false)} />
+                  ) : (
+                    <EyeInvisibleOutlined onClick={() => setConfirmPasswordVisible(true)} />
+                  )
+                }
+              />
+            </Item>
+            <div className='flex flex-row gap-3'>
+                {data && <div dangerouslySetInnerHTML={{ __html: data }} />}
+            <Item name="svgText" rules={[{ required: true, message: '请输入验证码!' }]}>
+              <Input placeholder='请输入验证码' />
+            </Item>
+            </div>
+          </>
         )}
-        <Item className='flex justify-between gap-3'>
-          {!isRegistering ? (
-            <Button type='primary' htmlType='submit'> 登录 </Button>
-          ) : (
-            <Button type='primary' htmlType='submit'> 注册 </Button>
-          )}
-          <Button type='default' onClick={() => {
-            setIsRegistering(!isRegistering);
-          }}>
+        <Item className='flex justify-between gap-3 flex-row'>
+          <Button type='primary' htmlType='submit'>
+            {!isRegistering ? '登录' : '注册'}
+          </Button>
+          <Button type='default' onClick={() => setIsRegistering(!isRegistering)}>
             {isRegistering ? '登录' : '注册'}
           </Button>
         </Item>
