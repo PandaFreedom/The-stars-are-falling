@@ -1,142 +1,77 @@
-"use client";
+"use client"
+import { Button, Form, Input } from 'antd';
+import React, { useState } from 'react';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
-import React from 'react';
-import { Form, Input, Button, message } from 'antd';
-import { UserOutlined, LockOutlined, ReloadOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-interface LoginFormValues {
-  username: string;
-  password: string;
-  captcha: string;
-}
+const { Item } = Form;
 
-const LoginForm: React.FC = () => {
+function LoginForm() {
   const [form] = Form.useForm();
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  // 定义表单值的类型
+  interface FormValues {
+    username: string;
+    password: string;
+    confirmPassword?: string; // 可选字段
+  }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['captcha'],
-    queryFn: async () => {
-      const response = await fetch('http://localhost:3001/api/user/loginSvg', {
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('网络错误，无法获取验证码');
-      }
-      return response.text(); // 返回 SVG 文本
-    }
-  });
-  // 刷新验证码函数
-  const refreshCaptcha = () => {
-    queryClient.invalidateQueries({ queryKey: ['captcha'] });
+  const onFinish = (values: FormValues) => {
+    console.log(values);
+    form.resetFields();
   };
 
-  const onFinish = (values: LoginFormValues) => {
-    operation.mutate(values);
-    console.log('values', values);
-  };
-
-  const operation = useMutation({
-    mutationFn: async (values: LoginFormValues) => {
-      const response = await fetch('http://localhost:3001/api/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(values),
-      });
-      if (!response.ok) {
-        throw new Error('登录失败');
-      }
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.code === 200) {
-        message.success('登录成功');
-        // 登录成功后可以进行跳转
-        router.push('/dashboard');
-      } else {
-        message.error(data.message || '登录失败');
-        // 登录失败后刷新验证码
-        refreshCaptcha();
-      }
-    },
-    onError: () => {
-      message.error('登录失败，请重试');
-      // 发生错误时也刷新验证码
-      refreshCaptcha();
-    }
-  });
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   return (
-    <Form
-      form={form}
-      name="login"
-      onFinish={onFinish}
-      autoComplete="off"
-    >
-      <Form.Item
-        name="username"
-        rules={[{ required: true, message: '请输入用户名!' }]}
-      >
-        <Input
-          prefix={<UserOutlined />}
-          placeholder="用户名"
-          size="large"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="password"
-        rules={[{ required: true, message: '请输入密码!' }]}
-      >
-        <Input.Password
-          prefix={<LockOutlined />}
-          placeholder="密码"
-          size="large"
-        />
-      </Form.Item>
-
-      <Form.Item
-        name="captcha"
-        rules={[{ required: true, message: '请输入验证码!' }]}
-      >
-        <div className="flex items-center gap-2">
-          <Input placeholder='请输入验证码' />
-          <div className="flex items-center">
-            {isLoading ? (
-              <div>加载验证码...</div>
-            ) : (
-              <>
-                <div dangerouslySetInnerHTML={{ __html: data || '' }} />
-                <Button
-                  type="text"
-                  icon={<ReloadOutlined />}
-                  onClick={refreshCaptcha}
-                  title="刷新验证码"
-                />
-              </>
-            )}
-          </div>
-        </div>
-      </Form.Item>
-
-      <Form.Item>
-        <Button
-          type="primary"
-          htmlType="submit"
-          className="w-full"
-          size="large"
-          loading={operation.isPending}
-        >
-          登录
-        </Button>
-      </Form.Item>
-    </Form>
+    <div>
+      <Form form={form} onFinish={onFinish}>
+        <Item name="username" rules={[{ required: true, message: '请输入用户名!' }]}>
+          <Input placeholder='用户名' />
+        </Item>
+        <Item name="password" rules={[{ required: true, message: '请输入密码!' }]}>
+          <Input
+            placeholder='密码'
+            type={passwordVisible ? 'text' : 'password'}
+            suffix={
+              passwordVisible ? (
+                <EyeOutlined onClick={() => setPasswordVisible(false)} />
+              ) : (
+                <EyeInvisibleOutlined onClick={() => setPasswordVisible(true)} />
+              )
+            }
+          />
+        </Item>
+        {isRegistering && (
+          <Item name="confirmPassword" rules={[{ required: true, message: '请输入确认密码!' }]}>
+            <Input
+              placeholder='确认密码'
+              type={confirmPasswordVisible ? 'text' : 'password'}
+              suffix={
+                confirmPasswordVisible ? (
+                  <EyeOutlined onClick={() => setConfirmPasswordVisible(false)} />
+                ) : (
+                  <EyeInvisibleOutlined onClick={() => setConfirmPasswordVisible(true)} />
+                )
+              }
+            />
+          </Item>
+        )}
+        <Item className='flex justify-between gap-3'>
+          {!isRegistering ? (
+            <Button type='primary' htmlType='submit'> 登录 </Button>
+          ) : (
+            <Button type='primary' htmlType='submit'> 注册 </Button>
+          )}
+          <Button type='default' onClick={() => {
+            setIsRegistering(!isRegistering);
+          }}>
+            {isRegistering ? '登录' : '注册'}
+          </Button>
+        </Item>
+      </Form>
+    </div>
   );
-};
+}
 
 export default LoginForm;
