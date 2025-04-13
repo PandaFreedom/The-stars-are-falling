@@ -32,10 +32,7 @@ function LoginForm() {
   const onFinish = (values: FormValues) => {
     console.log('提交的值:', values);
 
-    // 根据是否在注册模式确定请求URL
-    const url = isRegistering ? 'http://localhost:3001/login/creactUser' : 'http://localhost:3001/login/userLogin';
-
-    fetch(url, {
+    fetch('http://localhost:3001/login/creactUser', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
